@@ -26,13 +26,22 @@ with an evidence-backed verdict. **Read `PLAN.md` first**: scope, day-by-day pla
 
 ## Commands
 
-(To be filled in on day 1 when the project is scaffolded.)
+Node 24 runs the `.ts` files directly (type stripping): imports use `.ts` extensions, no enums or other
+non-erasable TypeScript syntax.
 
 ```bash
+npm test                                   # vitest, mocked: no network, no API spend
+npm run typecheck                          # tsc --noEmit
+npm run smoke                              # one LIVE call (AGENT_PROVIDER=baseten for Muse Spark Open)
 python C:/Users/anwar/.claude/skills/build-discipline/scripts/slop_scan.py .
 bash C:/Users/anwar/.claude/skills/security/scripts/scan-secrets.sh . --check-remote   # before every push
 ```
 
 ## Status
 
-- 2026-10-28: plan written (`PLAN.md`). Nothing built yet. Next: day 1 of the plan.
+- 2026-10-28: plan written (`PLAN.md`).
+- 2026-11-02: plan compressed to 2.5 days (SAM fallback cut, voice notes only if time, ~20 test cases).
+  Built: agent loop, tools (decode_qr, parse_duitnow, inspect_link + SSRF guard, official_contact), code-decided
+  verdict, BM/EN reply. Live smoke works on Muse Spark 1.3 and on Baseten Muse Spark Open. Modal credits not
+  granted; not used. Deadline is 5 Nov 10:00 AM MYT (EST after US DST ended), our target 4 Nov 9 PM MYT.
+  Next: Telegram bot on Render, test set + eval for both models, README, video.

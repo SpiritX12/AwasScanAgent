@@ -1,0 +1,36 @@
+{
+  "name": "awasscan-agent",
+  "version": "0.1.0",
+  "description": "Telegram agent on Meta Muse models that investigates suspicious Malaysian messages with real tools",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc",
+    "smoke": "node --env-file=.env scripts/smoke.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SpiritX12/AwasScanAgent.git"
+  },
+  "license": "MIT",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/SpiritX12/AwasScanAgent/issues"
+  },
+  "homepage": "https://github.com/SpiritX12/AwasScanAgent#readme",
+  "dependencies": {
+    "jsqr": "^1.4.0",
+    "openai": "^7.47.0",
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/qrcode": "^1.5.6",
+    "qrcode": "^1.5.4",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=24"
+  }
+}
