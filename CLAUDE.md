@@ -49,7 +49,8 @@ bash C:/Users/anwar/.claude/skills/security/scripts/scan-secrets.sh . --check-re
   Telegram bot (@AwasScanAgentBot) works end to end in polling mode, tested from the owner's phone; webhook
   server + render.yaml ready. Deployed on Render (https://awasscan-agent.onrender.com), kept warm by a
   cron-job.org ping to /healthz every 10 min.
-  Eval: 28 synthetic cases; both models 21/21 scams caught (19-20 high risk), 0/7 false alarms. Code checks
-  of every message (text tactics + forwarded APK files by name/type, never downloaded) are evidence MSG; "high
+  Eval: 33 synthetic cases; both models 25/25 scams caught (22 high risk), 1/8 false alarms (friend's photo ZIP
+  rated suspicious, kept as an honest miss). Code checks of every message (text tactics + forwarded APK/ZIP files
+  by name/type, never downloaded) are evidence MSG; screenshots go through check_text/check_file_name tools; "high
   risk" needs cited evidence with a warning. Link check also spots APKs from response headers.
   Next: README polish, 3-minute video, X post, submit (target 4 Nov 9 PM MYT). Voice notes only if time.

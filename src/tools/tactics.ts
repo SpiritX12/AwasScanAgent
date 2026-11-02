@@ -87,7 +87,7 @@ const TACTICS: Tactic[] = [
   {
     code: 'install_app_request',
     severity: 'medium',
-    pattern: /\b(download|install|muat turun|pasang|muat naik)\b[^.!?\n]{0,40}\b(app|apps|aplikasi|apk)\b/i,
+    pattern: /\b(download|install|instal|muat turun|pasang|muat naik)\b[^.!?\n]{0,40}\b(app|apps|aplikasi|apk)\b/i,
     unless: /\b(play store|google play|app store|appgallery)\b/i,
     en: 'It asks you to install an app from a link instead of the Play Store or App Store.',
     ms: 'Ia meminta anda memasang aplikasi melalui pautan, bukan dari Play Store atau App Store.',
@@ -98,6 +98,20 @@ const TACTICS: Tactic[] = [
     pattern: /\b(send|hantar|reply|balas)\b\s+[A-Z]{2,10}\s+\d{4,8}\s+(to|ke)\s+\d{4,6}\b/i,
     en: 'It asks you to SMS a code to a short number, which can approve a charge on your phone bill.',
     ms: 'Ia meminta anda menghantar kod melalui SMS ke nombor pendek, yang boleh meluluskan caj pada bil telefon.',
+  },
+  {
+    code: 'open_on_computer',
+    severity: 'medium',
+    pattern: /\b(use|guna|gunakan|buka|open)\b[^.!?\n]{0,15}\b(computer|komputer|pc|laptop)\b/i,
+    en: 'It pushes you to open the file on a computer, where hidden programs in ZIP files can run.',
+    ms: 'Ia mendesak anda membuka fail di komputer, di mana program tersembunyi dalam fail ZIP boleh berjalan.',
+  },
+  {
+    code: 'forward_to_finance',
+    severity: 'medium',
+    pattern: /\b(forward|hantar|majukan)\b[^.!?\n]{0,40}\b(finance|kewangan|accounts?|akaun syarikat|PIC)\b/i,
+    en: 'It asks you to pass a file to your company\'s finance or accounts team, a common way to spread office malware.',
+    ms: 'Ia meminta anda menghantar fail kepada bahagian kewangan syarikat, cara biasa menyebarkan perisian hasad pejabat.',
   },
   {
     code: 'pressure_deadline',

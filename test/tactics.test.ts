@@ -19,6 +19,10 @@ describe('checkTactics', () => {
     ['Tahniah! Anda memenangi iPhone. Bayar kos penghantaran RM9.90 sahaja.', 'prize_fee'],
     ['Register as member and download our app here to get 50% off.', 'install_app_request'],
     ['RM0: You requested to purchase vouchers. Send CODA 656001 to 20000 to complete.', 'sms_code_confirmation'],
+    ['If cannot open using phone, pls use computer to open. Tq.', 'open_on_computer'],
+    ['Tolong buka komputer dan semak ya', 'open_on_computer'],
+    ['SOA sudah keluar. Pls help forward to ur company PIC or finance side for checking ya.', 'forward_to_finance'],
+    ['Klik sini instal aplikasi jemputan', 'install_app_request'],
   ])('finds the tactic in: %s', (text, expected) => {
     expect(codes(text)).toContain(expected);
   });

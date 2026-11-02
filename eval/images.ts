@@ -24,7 +24,34 @@ async function poster(qrContent: string, heading: string, subheading: string): P
     .png().toBuffer();
 }
 
+const escapeXml = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/** A plain chat screenshot: one incoming text bubble and one file bubble. No real contact details. */
+async function chatScreenshot(lines: string[], fileName: string, fileInfo: string): Promise<Buffer> {
+  const textRows = lines.map((line, i) => `<text x="40" y="${200 + i * 34}" font-size="24" font-family="sans-serif">${escapeXml(line)}</text>`).join('');
+  const fileTop = 200 + lines.length * 34 + 40;
+  const svg = `<svg width="600" height="${fileTop + 160}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="600" height="${fileTop + 160}" fill="#efe7dd"/>
+    <rect width="600" height="100" fill="#075e54"/>
+    <text x="30" y="60" font-size="26" fill="#ffffff" font-family="sans-serif">Nombor tidak dikenali</text>
+    <rect x="20" y="150" width="540" height="${lines.length * 34 + 30}" rx="12" fill="#ffffff"/>
+    ${textRows}
+    <rect x="20" y="${fileTop}" width="540" height="110" rx="12" fill="#ffffff"/>
+    <text x="40" y="${fileTop + 45}" font-size="24" font-family="sans-serif">${escapeXml(fileName)}</text>
+    <text x="40" y="${fileTop + 85}" font-size="20" fill="#667781" font-family="sans-serif">${escapeXml(fileInfo)}</text>
+  </svg>`;
+  return sharp(Buffer.from(svg)).png().toBuffer();
+}
+
 export const SYNTHETIC_IMAGES: Record<string, () => Promise<Buffer>> = {
+  apk_chat_screenshot: () => chatScreenshot(
+    ['Salam sejahtera,', 'Maaf hantar jemputan guna WhatsApp.', 'Tengok tarikh & masa, klik sini instal'],
+    'JEMPUTAN MAJLIS KAHWIN.apk', '4.8 MB • APK',
+  ),
+  zip_chat_screenshot: () => chatScreenshot(
+    ['SOA sudah keluar. Pls help forward to ur', 'company PIC or finance side for checking ya.', 'If cannot open using phone, pls use computer.'],
+    'PDF_7Q2X9K_20261101093015.ZIP', '284 KB • zip',
+  ),
   // Payee account swapped after the checksum was computed: the CRC no longer matches.
   tampered_qr: () => poster(
     paymentPayload('KEDAI RUNCIT CONTOH', '0000000000001').replace('0000000000001', '0000000000999'),

@@ -33,6 +33,8 @@ The user forwards a suspicious message, screenshot or payment QR. Investigate wi
 - Attached image with a QR code: call decode_qr. If it is a payment QR, call parse_duitnow on its content. If it is a link, call inspect_link.
 - Any link in the text or screenshot: call inspect_link.
 - If the message claims to be from a bank, Pos, PDRM, LHDN or similar: call official_contact.
+- Screenshot of a chat or SMS: call check_text with the message text you read in it, and check_file_name for any
+  attached file name shown (APK, ZIP...). Then check links and organisations as above.
 - A forwarded APK file is an Android app outside the Play Store: tell the user not to install it.
 Each tool result has an evidence_id. The user's own message has evidence_id "${MESSAGE_EVIDENCE_ID}", together with the
 scam tactics that code already found in its text.

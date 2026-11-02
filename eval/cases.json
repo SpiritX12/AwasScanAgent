@@ -137,6 +137,40 @@
     "text": "RM0: You have requested to purchase game vouchers via Digi. RM130.00 will be charged. Send CODA 554912 to 20000 to complete your purchase."
   },
   {
+    "id": "soa-zip-file",
+    "label": "scam",
+    "pattern": "ZIP named like a PDF statement, open on computer",
+    "text": "SOA sudah keluar. Pls help forward to ur company PIC or finance side for checking ya. If cannot open using phone, pls use computer to open. Tq.",
+    "file": {
+      "name": "PDF_7Q2X9K_20261101093015.ZIP",
+      "mimeType": "application/zip"
+    }
+  },
+  {
+    "id": "statement-zip-file",
+    "label": "scam",
+    "pattern": "random-named ZIP, forward to finance",
+    "text": "Please forward your company statement to the finance department for verification.",
+    "file": {
+      "name": "20261101104622-5C3E91AB7F20.zip",
+      "mimeType": "application/zip"
+    }
+  },
+  {
+    "id": "apk-screenshot",
+    "label": "scam",
+    "pattern": "screenshot of an APK wedding card chat",
+    "text": "Ada orang hantar ni, betul ke jemputan?",
+    "image": "apk_chat_screenshot"
+  },
+  {
+    "id": "zip-screenshot",
+    "label": "scam",
+    "pattern": "screenshot of a ZIP statement chat",
+    "text": "Is this safe to open?",
+    "image": "zip_chat_screenshot"
+  },
+  {
     "id": "legit-bank-alert",
     "label": "legit",
     "pattern": "card transaction alert, no link",
@@ -178,5 +212,15 @@
     "label": "legit",
     "pattern": "official app from Google Play",
     "text": "Kemas kini: Muat turun aplikasi rasmi MySejahtera dari Google Play atau App Store sahaja."
+  },
+  {
+    "id": "legit-photos-zip",
+    "label": "legit",
+    "pattern": "friend shares a ZIP of photos",
+    "text": "Ni gambar raya semalam, aku zip sebab banyak sangat",
+    "file": {
+      "name": "gambar_hari_raya_2026.zip",
+      "mimeType": "application/zip"
+    }
   }
 ]
