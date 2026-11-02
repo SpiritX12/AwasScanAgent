@@ -1,0 +1,24 @@
+# Render Blueprint: one free web service in Singapore. The service registers its own Telegram webhook on start.
+services:
+  - type: web
+    name: awasscan-agent
+    runtime: node
+    region: singapore
+    plan: free
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: 24.11.1
+      - key: AGENT_PROVIDER
+        value: meta
+      - key: TELEGRAM_WEBHOOK_SECRET
+        generateValue: true
+      # Secrets: Render asks for these when the Blueprint is created. Never commit them.
+      - key: MODEL_API_KEY
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: BASETEN_API_KEY
+        sync: false

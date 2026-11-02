@@ -33,6 +33,8 @@ non-erasable TypeScript syntax.
 npm test                                   # vitest, mocked: no network, no API spend
 npm run typecheck                          # tsc --noEmit
 npm run smoke                              # one LIVE call (AGENT_PROVIDER=baseten for Muse Spark Open)
+npm run bot:poll                           # run the Telegram bot locally (stop it before Render is live)
+npm start                                  # webhook server (Render); render.yaml is the Blueprint
 python C:/Users/anwar/.claude/skills/build-discipline/scripts/slop_scan.py .
 bash C:/Users/anwar/.claude/skills/security/scripts/scan-secrets.sh . --check-remote   # before every push
 ```
@@ -44,4 +46,5 @@ bash C:/Users/anwar/.claude/skills/security/scripts/scan-secrets.sh . --check-re
   Built: agent loop, tools (decode_qr, parse_duitnow, inspect_link + SSRF guard, official_contact), code-decided
   verdict, BM/EN reply. Live smoke works on Muse Spark 1.3 and on Baseten Muse Spark Open. Modal credits not
   granted; not used. Deadline is 5 Nov 10:00 AM MYT (EST after US DST ended), our target 4 Nov 9 PM MYT.
-  Next: Telegram bot on Render, test set + eval for both models, README, video.
+  Telegram bot (@AwasScanAgentBot) works end to end in polling mode, tested from the owner's phone; webhook
+  server + render.yaml ready. Next: deploy on Render, test set + eval for both models, README, video.
