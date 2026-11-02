@@ -5,6 +5,7 @@ import { Bot, type Context } from 'grammy';
 import type { Message, MessageEntity } from 'grammy/types';
 import { investigate, type Investigation } from './agent.ts';
 import { ChatLimiter } from './limiter.ts';
+import { isAndroidPackage } from './tools/attachments.ts';
 import type { ModelChoice } from './model.ts';
 import { formatReply } from './verdict.ts';
 
@@ -26,6 +27,7 @@ const REPLIES = {
   failed: 'Maaf, semakan gagal. Sila cuba lagi. / Sorry, the check failed. Please try again.',
   voiceNotYet: 'Nota suara belum disokong lagi. / Voice notes are not supported yet.',
   tooBig: 'Gambar terlalu besar (maks 10 MB). / Image too large (max 10 MB).',
+  unsupportedFile: 'Saya boleh semak mesej, tangkapan skrin, kod QR dan fail APK. / I can check messages, screenshots, QR codes and APK files.',
 };
 
 /** Message text plus any links hidden behind link text ("click here"), which scam messages rely on. */
@@ -61,7 +63,12 @@ export function createBot(token: string, model: ModelChoice, limiter = new ChatL
 
   bot.on(['message:text', 'message:photo', 'message:document'], async (ctx) => {
     const image = attachedImageSize(ctx.message);
-    if (ctx.message.document && !image.present) return; // non-image files: nothing to check
+    const document = ctx.message.document;
+    // Non-image files: only APKs are checked, by name and type. The file itself is never downloaded.
+    const apk = document && !image.present
+      ? { name: document.file_name ?? 'unnamed', mimeType: document.mime_type ?? 'unknown' }
+      : null;
+    if (apk && !isAndroidPackage(apk)) return void (await ctx.reply(REPLIES.unsupportedFile));
     if (image.bytes > MAX_IMAGE_BYTES) return void (await ctx.reply(REPLIES.tooBig));
 
     const chatId = ctx.chat.id;
@@ -74,6 +81,7 @@ export function createBot(token: string, model: ModelChoice, limiter = new ChatL
       try {
         const input: Investigation = { text: messageText(ctx.message) };
         if (image.present) input.images = [await downloadFile(ctx, token)];
+        if (apk) input.files = [apk];
         const verdict = await investigate(input, { client: model.client, model: model.model });
         await ctx.reply(formatReply(verdict).slice(0, TELEGRAM_TEXT_LIMIT));
       } catch (error) {

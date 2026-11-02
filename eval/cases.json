@@ -1,0 +1,182 @@
+[
+  {
+    "id": "bank-frozen-sms",
+    "label": "scam",
+    "pattern": "bank impersonation, link in SMS",
+    "text": "Maybank: Akaun anda telah dibekukan kerana aktiviti mencurigakan. Sahkan identiti dalam 24 jam di http://maybank2u-sahkan-akaun.com/login untuk elak akaun ditutup."
+  },
+  {
+    "id": "bank-tac-request",
+    "label": "scam",
+    "pattern": "bank impersonation, asks for TAC",
+    "text": "Hi, this is CIMB fraud department. We blocked a RM2,800 transfer from your account. To cancel it, please reply with the 6-digit TAC we just sent to your phone."
+  },
+  {
+    "id": "parcel-fee-link",
+    "label": "scam",
+    "pattern": "fake courier fee",
+    "text": "Pos Laju: Bungkusan anda tertahan di gudang kerana alamat tidak lengkap. Bayar caj RM2.50 di https://poslaju-redelivery.com/track dalam 12 jam atau bungkusan dipulangkan."
+  },
+  {
+    "id": "parcel-apk",
+    "label": "scam",
+    "pattern": "APK disguised as tracking",
+    "text": "Hello, saya rider J&T. Parcel you sampai tapi tak ada orang. Download gambar lokasi ni untuk confirm: https://files-jnt-delivery.com/gambar_lokasi.apk"
+  },
+  {
+    "id": "wedding-apk",
+    "label": "scam",
+    "pattern": "APK wedding invitation",
+    "text": "Assalamualaikum, jemput datang ke majlis perkahwinan anak kami pada 14 Disember. Kad jemputan digital: https://kad-kahwin-digital.net/jemputan_walimah.apk"
+  },
+  {
+    "id": "police-macau",
+    "label": "scam",
+    "pattern": "police / court threat",
+    "text": "Ini pegawai PDRM Bukit Aman. Nombor IC anda digunakan untuk akaun pengubahan wang haram. Jangan beritahu sesiapa. Pindahkan semua simpanan ke akaun selamat 8812345678 (Bank Rakyat) untuk siasatan, atau waran tangkap akan dikeluarkan hari ini."
+  },
+  {
+    "id": "lhdn-refund",
+    "label": "scam",
+    "pattern": "fake tax refund",
+    "text": "LHDN: Anda layak menerima bayaran balik cukai RM1,247.00. Tuntut sebelum 30/11 di https://lhdn-refund-myhasil.com/claim dengan memasukkan butiran perbankan anda."
+  },
+  {
+    "id": "job-task",
+    "label": "scam",
+    "pattern": "task / job scam",
+    "text": "Part time job! Just like TikTok videos and earn RM150-RM300 per day. No experience needed. First task need deposit RM100 to activate account, will refund with commission. WhatsApp me now!"
+  },
+  {
+    "id": "investment-group",
+    "label": "scam",
+    "pattern": "investment scam",
+    "text": "Join our VIP investment group. Guaranteed 30% return every week, approved by Bank Negara. Minimum RM500. Register now: https://bnm-approved-invest.com/vip"
+  },
+  {
+    "id": "shopee-lookalike",
+    "label": "scam",
+    "pattern": "fake e-commerce prize",
+    "text": "Tahniah! Anda memenangi iPhone dalam cabutan bertuah Shopee 11.11. Bayar kos penghantaran RM9.90 sahaja di https://shopee-hadiah11.com/claim"
+  },
+  {
+    "id": "tng-lookalike",
+    "label": "scam",
+    "pattern": "e-wallet impersonation",
+    "text": "Touch 'n Go eWallet: Your account will be suspended. Verify your PIN at https://tng-ewallet-verify.com today."
+  },
+  {
+    "id": "fake-nsrc-recovery",
+    "label": "scam",
+    "pattern": "fake fund recovery (NSRC impersonation)",
+    "text": "Saya pegawai NSRC. Kami boleh dapatkan semula wang RM12,000 yang anda hilang dalam scam bulan lepas. Bayar fi pemprosesan RM800 ke akaun 7700112233 dan wang akan dipulangkan dalam 3 hari."
+  },
+  {
+    "id": "userinfo-trick",
+    "label": "scam",
+    "pattern": "link hides real host after @",
+    "text": "RHB Now: Sila log masuk untuk kemas kini maklumat akaun: https://rhbnow.com.my@secure-login-update.net/auth"
+  },
+  {
+    "id": "qr-tampered",
+    "label": "scam",
+    "pattern": "edited DuitNow QR (checksum broken)",
+    "text": "Is this QR at the kedai runcit ok to pay?",
+    "image": "tampered_qr"
+  },
+  {
+    "id": "qr-personal-name",
+    "label": "scam",
+    "pattern": "QR sticker pays a person, not the shop",
+    "text": "Restoran Selera Contoh minta bayar guna QR ni. Betul ke?",
+    "image": "personal_qr"
+  },
+  {
+    "id": "qr-lookalike-link",
+    "label": "scam",
+    "pattern": "QR leads to lookalike bank site",
+    "text": "Poster in the lift says scan to get RM50 Maybank cashback",
+    "image": "link_qr"
+  },
+  {
+    "id": "wedding-apk-file",
+    "label": "scam",
+    "pattern": "APK file forwarded as a wedding card",
+    "text": "Jemputan ke majlis kami, sila buka kad ni ya",
+    "file": {
+      "name": "Surat Undangan Perkahwinan Digital.apk",
+      "mimeType": "application/vnd.android.package-archive"
+    }
+  },
+  {
+    "id": "disguised-apk-file",
+    "label": "scam",
+    "pattern": "APK disguised as a PDF",
+    "text": "Ini resit bayaran saman anda",
+    "file": {
+      "name": "resit_saman_PDRM.pdf.apk",
+      "mimeType": "application/vnd.android.package-archive"
+    }
+  },
+  {
+    "id": "cleaning-app-lure",
+    "label": "scam",
+    "pattern": "service ad pushes app install outside the Play Store",
+    "text": "Thank you for choosing our home cleaning service! Register as member and download our app to book and get 50% off: https://cuci-rumah-promo.store/app"
+  },
+  {
+    "id": "pos-spelled-domain",
+    "label": "scam",
+    "pattern": "spelled-out official domain on another TLD",
+    "text": "Pos Malaysia: Your package has been left unclaimed for 24 hours due to a missing address. Please update your address: https://pos-com-my.online/mypost"
+  },
+  {
+    "id": "sms-code-charge",
+    "label": "scam",
+    "pattern": "SMS a code to approve a charge",
+    "text": "RM0: You have requested to purchase game vouchers via Digi. RM130.00 will be charged. Send CODA 554912 to 20000 to complete your purchase."
+  },
+  {
+    "id": "legit-bank-alert",
+    "label": "legit",
+    "pattern": "card transaction alert, no link",
+    "text": "Maybank: RM45.90 was charged to your card ending 4321 at KEDAI BUKU CONTOH on 02/11. If this was not you, call the number on the back of your card."
+  },
+  {
+    "id": "legit-pos-official",
+    "label": "legit",
+    "pattern": "delivery update pointing to official site",
+    "text": "Pos Malaysia: Your parcel EF123456789MY is out for delivery today. Track it at https://www.pos.com.my"
+  },
+  {
+    "id": "legit-friend",
+    "label": "legit",
+    "pattern": "ordinary personal message",
+    "text": "Weh, jadi tak makan malam Jumaat ni? Aku dah book meja pukul 8 kat restoran biasa."
+  },
+  {
+    "id": "legit-lhdn-reminder",
+    "label": "legit",
+    "pattern": "official reminder, official domain",
+    "text": "Peringatan: Tarikh akhir e-Filing BE ialah 30 April. Log masuk melalui https://mytax.hasil.gov.my"
+  },
+  {
+    "id": "legit-otp",
+    "label": "legit",
+    "pattern": "OTP with do-not-share warning",
+    "text": "Your Shopee verification code is 482913. Never share this code with anyone, including Shopee staff."
+  },
+  {
+    "id": "legit-shop-qr",
+    "label": "legit",
+    "pattern": "normal shop QR, name matches",
+    "text": "Kedai Runcit Contoh punya QR untuk bayar. Ok ke?",
+    "image": "shop_qr"
+  },
+  {
+    "id": "legit-play-store",
+    "label": "legit",
+    "pattern": "official app from Google Play",
+    "text": "Kemas kini: Muat turun aplikasi rasmi MySejahtera dari Google Play atau App Store sahaja."
+  }
+]

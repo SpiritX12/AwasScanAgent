@@ -7,7 +7,8 @@
     "bot:poll": "node --env-file=.env src/server.ts --poll",
     "test": "vitest run",
     "typecheck": "tsc",
-    "smoke": "node --env-file=.env scripts/smoke.ts"
+    "smoke": "node --env-file=.env scripts/smoke.ts",
+    "eval": "node --env-file=.env scripts/eval.ts"
   },
   "repository": {
     "type": "git",

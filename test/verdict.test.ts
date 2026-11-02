@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { signal } from '../src/evidence.ts';
 import { decideVerdict, formatReply, type EvidenceEntry, type ModelAnswer } from '../src/verdict.ts';
 
-const highEvidence: EvidenceEntry[] = [{ id: 'E1', tool: 'inspect_link', signals: [signal('link_lookalike', 'high', 'Lookalike site.')] }];
+const highEvidence: EvidenceEntry[] = [{ id: 'E1', tool: 'inspect_link', signals: [signal('link_lookalike', 'high', 'Lookalike site.', 'Laman tiruan.')] }];
+const mediumEvidence: EvidenceEntry[] = [{ id: 'E1', tool: 'parse_duitnow', signals: [signal('qr_no_merchant_name', 'medium', 'No payee name.', 'Tiada nama penerima.')] }];
 const cleanEvidence: EvidenceEntry[] = [{ id: 'E1', tool: 'inspect_link', signals: [] }];
 const answer = (overrides: Partial<ModelAnswer>): ModelAnswer => ({ risk: 'no_red_flags_found', language: 'en', findings: [], advice: '', ...overrides });
 
@@ -12,9 +13,14 @@ describe('decideVerdict', () => {
     expect(verdict.risk).toBe('high_risk');
   });
 
-  it('lets the model raise the risk with a tool-backed citation', () => {
-    const verdict = decideVerdict(cleanEvidence, answer({ risk: 'high_risk', findings: [{ text: 'Pays a personal account', cites: ['E1'] }] }));
+  it('lets the model raise to high risk when it cites evidence that carries a warning', () => {
+    const verdict = decideVerdict(mediumEvidence, answer({ risk: 'high_risk', findings: [{ text: 'Pays a person, not the shop', cites: ['E1'] }] }));
     expect(verdict.risk).toBe('high_risk');
+  });
+
+  it('caps at suspicious when the cited evidence found nothing wrong', () => {
+    const verdict = decideVerdict(cleanEvidence, answer({ risk: 'high_risk', findings: [{ text: 'Sounds like a scam', cites: ['E1'] }] }));
+    expect(verdict.risk).toBe('suspicious');
   });
 
   it('drops findings without citations or with made-up evidence ids', () => {
@@ -43,5 +49,10 @@ describe('formatReply', () => {
       expect(text).toMatch(language === 'en' ? /does not prove it is safe/ : /tidak bermakna ia selamat/);
       expect(text).toContain('997');
     }
+  });
+
+  it('shows evidence in the reply language', () => {
+    expect(formatReply(decideVerdict(highEvidence, answer({ language: 'ms' })))).toContain('Laman tiruan.');
+    expect(formatReply(decideVerdict(highEvidence, answer({ language: 'en' })))).toContain('Lookalike site.');
   });
 });

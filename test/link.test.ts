@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { domainAgeDays, followRedirects, isBlockedAddress, registrableDomain, staticLinkSignals } from '../src/tools/link.ts';
+import {
+  domainAgeDays, followRedirects, headersShowAndroidApp, isBlockedAddress, registrableDomain, staticLinkSignals,
+} from '../src/tools/link.ts';
 
 const codes = (url: string) => staticLinkSignals(new URL(url)).map((s) => s.code);
 
@@ -15,6 +17,9 @@ describe('isBlockedAddress (SSRF guard)', () => {
 describe('staticLinkSignals', () => {
   it('flags a lookalike of a Malaysian bank', () => {
     expect(codes('https://maybank2u-secure-login.com/x')).toContain('link_lookalike');
+  });
+  it('flags a spelled-out official domain on another TLD', () => {
+    expect(codes('https://pos-com-my.online/mypost')).toContain('link_lookalike');
   });
   it('does not flag the official site', () => {
     expect(codes('https://www.maybank2u.com.my/home')).not.toContain('link_lookalike');
@@ -45,9 +50,29 @@ describe('followRedirects', () => {
     expect(result.stoppedBecause).toBe('too many redirects');
     expect(n).toBe(6);
   });
+  it('detects an app download from headers when the URL hides ".apk"', async () => {
+    const result = await followRedirects(new URL('https://kad-jemputan.example/download?id=1'),
+      async () => ({ status: 200, location: null, servesAndroidApp: true }));
+    expect(result.servesAndroidApp).toBe(true);
+  });
+  it('detects an app download when a redirect lands on an .apk path', async () => {
+    let hop = 0;
+    const result = await followRedirects(new URL('https://short.example/x'),
+      async () => (hop++ === 0 ? { status: 302, location: 'https://cdn.example/files/invite.apk' } : { status: 200, location: null }));
+    expect(result.servesAndroidApp).toBe(true);
+  });
   it('blocks a hostname that resolves to loopback, inside the real DNS lookup', async () => {
     const result = await followRedirects(new URL('http://localhost/'));
     expect(result.stoppedBecause).toBe('points to a private network address');
+  });
+});
+
+describe('headersShowAndroidApp', () => {
+  it('reads the Android content type and APK attachment names', () => {
+    expect(headersShowAndroidApp('application/vnd.android.package-archive', undefined)).toBe(true);
+    expect(headersShowAndroidApp('application/octet-stream', 'attachment; filename="jemputan.apk"')).toBe(true);
+    expect(headersShowAndroidApp('text/html; charset=utf-8', undefined)).toBe(false);
+    expect(headersShowAndroidApp('application/pdf', 'attachment; filename="invoice.pdf"')).toBe(false);
   });
 });
 

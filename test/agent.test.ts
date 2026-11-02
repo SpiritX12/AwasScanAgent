@@ -33,6 +33,16 @@ describe('investigate', () => {
     expect(verdict.findings).toHaveLength(1);
   });
 
+  it('rates a forwarded APK file high risk from code evidence alone', async () => {
+    const { client, requests } = scriptedClient([{ content: 'not json' }]);
+    const verdict = await investigate(
+      { text: 'Jemputan kahwin', files: [{ name: 'Surat Undangan Perkahwinan Digital.apk', mimeType: 'application/vnd.android.package-archive' }] },
+      { client, model: 'test' },
+    );
+    expect(verdict.risk).toBe('high_risk');
+    expect(JSON.stringify(requests[0].messages)).toContain('Surat Undangan Perkahwinan Digital.apk');
+  });
+
   it('stops after the step limit and still returns a verdict', async () => {
     const loop = { content: null, tool_calls: [{ id: 'c', type: 'function', function: { name: 'official_contact', arguments: '{}' } }] };
     const { client, requests } = scriptedClient([loop, loop, loop]);

@@ -18,11 +18,27 @@ npm run smoke          # one live investigation (costs a few cents)
 ```
 
 `AGENT_PROVIDER=baseten npm run smoke` runs the same agent on Muse Spark Open via Baseten.
+`npm run eval` runs the synthetic test set ([eval/cases.json](eval/cases.json)) on both models and writes
+[eval/results.md](eval/results.md).
+
+## Eval (28 synthetic cases: 21 scam, 7 legitimate)
+
+| Model | Scams caught | Of those, high risk | False alarms | Median time |
+|---|---|---|---|---|
+| Muse Spark 1.3 (Meta Model API) | 21/21 | 19/21 | 0/7 | 7.2s |
+| Muse Spark Open (Baseten) | 21/21 | 20/21 | 0/7 | 4.1s |
+
+Cases are written from public scam advisories (bank and courier impersonation, APK "wedding invitations",
+police threats, fake fund recovery, tampered DuitNow QR stickers, APK files forwarded as invitations or receipts).
+All names, numbers and sites are made up.
 
 ## How an investigation works
 
-`src/agent.ts` sends the message (and any images) to the model with four tools from `src/tools/`:
+Code first scans the message text for known scam tactics (`src/tools/tactics.ts`: asking for a TAC/OTP,
+"safe account" transfers, arrest threats, guaranteed returns...) and forwarded files for Android apps
+(`src/tools/attachments.ts`, by name and type only: the file is never downloaded). Then `src/agent.ts` sends the message (and any
+images) to the model with four tools from `src/tools/`:
 `decode_qr`, `parse_duitnow`, `inspect_link` (behind an SSRF guard) and `official_contact`.
 Each tool result becomes numbered evidence (E1, E2...). The model's final findings must cite that evidence;
 `src/verdict.ts` drops uncited findings and decides the verdict in code. The model can raise the risk, never
-lower it, and there is no "safe" verdict.
+lower it, and can only reach "high risk" by citing evidence that itself carries a warning. There is no "safe" verdict.

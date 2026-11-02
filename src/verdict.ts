@@ -1,4 +1,5 @@
 // Code decides the verdict. Tool signals set the floor; the model can only raise it, and only with cited findings.
+// To raise all the way to "high risk", a cited piece of evidence must itself carry a warning signal.
 // There is deliberately no "safe" verdict: the best outcome is "no red flags found".
 
 import type { Signal } from './evidence.ts';
@@ -34,6 +35,7 @@ export interface Verdict {
   findings: ModelFinding[]; // only findings whose citations all point at real evidence
   signals: Signal[];
   advice: string;
+  tools: string[]; // tools the agent called, in order (for the eval report)
 }
 
 const rank = (risk: Risk) => RISK_LEVELS.indexOf(risk);
@@ -54,12 +56,14 @@ export function decideVerdict(evidence: EvidenceEntry[], answer: ModelAnswer | n
     (f) => f.text.trim() && f.cites.length > 0 && f.cites.every((id) => knownIds.has(id)),
   );
 
-  // The model may raise the risk only if it backed that up. Findings that cite only the message itself
-  // (tactics like urgency or impersonation) can raise to "suspicious", not to "high_risk".
+  // The model may raise the risk only with cited findings. Citing evidence that found nothing wrong
+  // (e.g. a list of official websites) supports at most "suspicious", never "high_risk".
   let modelRisk: Risk = 'no_red_flags_found';
   if (answer && findings.length > 0) {
-    const toolBacked = findings.some((f) => f.cites.some((id) => id !== MESSAGE_EVIDENCE_ID));
-    modelRisk = toolBacked ? answer.risk : (rank(answer.risk) > rank('suspicious') ? 'suspicious' : answer.risk);
+    const byId = new Map(evidence.map((e) => [e.id, e]));
+    const citesAWarning = findings.some((f) =>
+      f.cites.some((id) => byId.get(id)?.signals.some((s) => s.severity !== 'info')));
+    modelRisk = citesAWarning || rank(answer.risk) <= rank('suspicious') ? answer.risk : 'suspicious';
   }
 
   return {
@@ -68,6 +72,7 @@ export function decideVerdict(evidence: EvidenceEntry[], answer: ModelAnswer | n
     findings,
     signals,
     advice: answer?.advice?.trim() ?? '',
+    tools: evidence.filter((e) => e.id !== MESSAGE_EVIDENCE_ID).map((e) => e.tool),
   };
 }
 
@@ -97,7 +102,7 @@ export function formatReply(verdict: Verdict): string {
   }
   const flagged = verdict.signals.filter((s) => s.severity !== 'info');
   if (flagged.length > 0) {
-    lines.push('', LABELS[language].evidence, ...flagged.map((s) => `• ${s.detail}`));
+    lines.push('', LABELS[language].evidence, ...flagged.map((s) => `• ${s.detail[language]}`));
   }
   if (verdict.advice) lines.push('', verdict.advice);
   lines.push('', LABELS[language].hotline);

@@ -52,7 +52,11 @@ export function crc16(text: string): string {
 export function parseDuitNow(payload: string): ToolResult {
   const records = parseTlv(payload.trim());
   if (!records || records[0]?.tag !== '00') {
-    return { ok: false, signals: [signal('qr_not_emv', 'info', 'This QR is not a payment (EMV) QR code.')], data: {} };
+    return {
+      ok: false,
+      signals: [signal('qr_not_emv', 'info', 'This QR is not a payment (EMV) QR code.', 'QR ini bukan kod QR pembayaran (EMV).')],
+      data: {},
+    };
   }
 
   const fields: Record<string, string> = {};
@@ -72,18 +76,23 @@ export function parseDuitNow(payload: string): ToolResult {
   const trimmed = payload.trim();
   const expectedCrc = crc16(trimmed.slice(0, -4));
   if (!fields.crc || records.at(-1)?.tag !== '63') {
-    signals.push(signal('qr_crc_missing', 'high', 'The QR has no checksum, so it was not made by a normal bank app.'));
+    signals.push(signal('qr_crc_missing', 'high', 'The QR has no checksum, so it was not made by a normal bank app.',
+      'QR ini tiada checksum, jadi ia bukan dibuat oleh aplikasi bank biasa.'));
   } else if (fields.crc.toUpperCase() !== expectedCrc) {
-    signals.push(signal('qr_crc_mismatch', 'high', 'The QR checksum does not match its contents: it was likely edited.'));
+    signals.push(signal('qr_crc_mismatch', 'high', 'The QR checksum does not match its contents: it was likely edited.',
+      'Checksum QR tidak sepadan dengan kandungannya: ia mungkin telah diubah.'));
   }
   if (accounts.length === 0) {
-    signals.push(signal('qr_no_account', 'medium', 'The QR does not say which account receives the money.'));
+    signals.push(signal('qr_no_account', 'medium', 'The QR does not say which account receives the money.',
+      'QR tidak menyatakan akaun mana yang menerima wang.'));
   }
   if (fields.currency && fields.currency !== MYR_CURRENCY_CODE) {
-    signals.push(signal('qr_foreign_currency', 'medium', `The QR asks for a non-ringgit currency (code ${fields.currency}).`));
+    signals.push(signal('qr_foreign_currency', 'medium', `The QR asks for a non-ringgit currency (code ${fields.currency}).`,
+      `QR meminta mata wang selain ringgit (kod ${fields.currency}).`));
   }
   if (!fields.merchant_name) {
-    signals.push(signal('qr_no_merchant_name', 'medium', 'The QR does not name who gets paid.'));
+    signals.push(signal('qr_no_merchant_name', 'medium', 'The QR does not name who gets paid.',
+      'QR tidak menamakan siapa yang menerima bayaran.'));
   }
 
   return {

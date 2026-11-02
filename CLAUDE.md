@@ -47,4 +47,9 @@ bash C:/Users/anwar/.claude/skills/security/scripts/scan-secrets.sh . --check-re
   verdict, BM/EN reply. Live smoke works on Muse Spark 1.3 and on Baseten Muse Spark Open. Modal credits not
   granted; not used. Deadline is 5 Nov 10:00 AM MYT (EST after US DST ended), our target 4 Nov 9 PM MYT.
   Telegram bot (@AwasScanAgentBot) works end to end in polling mode, tested from the owner's phone; webhook
-  server + render.yaml ready. Next: deploy on Render, test set + eval for both models, README, video.
+  server + render.yaml ready. Deployed on Render (https://awasscan-agent.onrender.com), kept warm by a
+  cron-job.org ping to /healthz every 10 min.
+  Eval: 28 synthetic cases; both models 21/21 scams caught (19-20 high risk), 0/7 false alarms. Code checks
+  of every message (text tactics + forwarded APK files by name/type, never downloaded) are evidence MSG; "high
+  risk" needs cited evidence with a warning. Link check also spots APKs from response headers.
+  Next: README polish, 3-minute video, X post, submit (target 4 Nov 9 PM MYT). Voice notes only if time.

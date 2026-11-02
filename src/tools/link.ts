@@ -62,32 +62,42 @@ export function staticLinkSignals(url: URL): Signal[] {
   const domain = registrableDomain(host);
 
   if (url.username || url.password) {
-    signals.push(signal('link_userinfo_trick', 'high', 'The link hides its real address after an "@" sign.'));
+    signals.push(signal('link_userinfo_trick', 'high', 'The link hides its real address after an "@" sign.',
+      'Pautan menyembunyikan alamat sebenar selepas tanda "@".'));
   }
   if (isIP(host.replace(/^\[|\]$/g, ''))) {
-    signals.push(signal('link_raw_ip', 'medium', 'The link uses a bare IP address instead of a website name.'));
+    signals.push(signal('link_raw_ip', 'medium', 'The link uses a bare IP address instead of a website name.',
+      'Pautan menggunakan alamat IP, bukan nama laman web.'));
   }
   if (host.split('.').some((label) => label.startsWith('xn--'))) {
-    signals.push(signal('link_punycode', 'high', 'The website name uses look-alike characters (punycode).'));
+    signals.push(signal('link_punycode', 'high', 'The website name uses look-alike characters (punycode).',
+      'Nama laman web menggunakan huruf tiruan yang kelihatan sama (punycode).'));
   }
   if (/\.apk($|\?)/i.test(url.pathname)) {
-    signals.push(signal('link_apk_download', 'high', 'The link downloads an Android app (APK) outside the Play Store.'));
+    signals.push(signal('link_apk_download', 'high', 'The link downloads an Android app (APK) outside the Play Store.',
+      'Pautan memuat turun aplikasi Android (APK) dari luar Play Store.'));
   }
   if (SHORTENERS.has(domain)) {
-    signals.push(signal('link_shortener', 'info', 'The link uses a URL shortener that hides the real destination.'));
+    signals.push(signal('link_shortener', 'info', 'The link uses a URL shortener that hides the real destination.',
+      'Pautan menggunakan pemendek URL yang menyembunyikan destinasi sebenar.'));
   }
   if (url.protocol === 'http:') {
-    signals.push(signal('link_no_https', 'info', 'The link is not encrypted (http, not https).'));
+    signals.push(signal('link_no_https', 'info', 'The link is not encrypted (http, not https).',
+      'Pautan tidak disulitkan (http, bukan https).'));
   }
 
   const official = OFFICIAL_DOMAINS.find((o) => o.domains.includes(domain));
   if (!official) {
-    const imitated = OFFICIAL_DOMAINS.find((o) => o.keywords.some((k) => host.replace(/[-.]/g, '').includes(k)));
+    // Also catches spelled-out official domains, e.g. "pos-com-my.online" imitating pos.com.my.
+    const compact = host.replace(/[-.]/g, '');
+    const imitated = OFFICIAL_DOMAINS.find((o) =>
+      o.keywords.some((k) => compact.includes(k)) || o.domains.some((d) => compact.includes(d.replace(/\./g, ''))));
     if (imitated) {
       signals.push(signal(
         'link_lookalike',
         'high',
         `The website mentions ${imitated.name} but is not its official site (${imitated.domains[0]}).`,
+        `Laman web ini menyebut ${imitated.name} tetapi bukan laman rasminya (${imitated.domains[0]}).`,
       ));
     }
   }
@@ -97,6 +107,13 @@ export function staticLinkSignals(url: URL): Signal[] {
 interface HopResult {
   status: number;
   location: string | null;
+  servesAndroidApp?: boolean; // from response headers only: the body is never read
+}
+
+/** True when headers say the response is an Android app, even if the URL hides the ".apk". */
+export function headersShowAndroidApp(contentType: string | undefined, contentDisposition: string | undefined): boolean {
+  return /application\/vnd\.android\.package-archive/i.test(contentType ?? '')
+    || /filename\*?=[^;]*\.(apk|xapk|apks|apkm)["']?\s*(;|$)/i.test(contentDisposition ?? '');
 }
 
 function requestHead(url: URL, timeoutMs: number): Promise<HopResult> {
@@ -104,7 +121,11 @@ function requestHead(url: URL, timeoutMs: number): Promise<HopResult> {
   return new Promise((resolve, reject) => {
     const req = client.request(url, { method: 'GET', lookup: guardedLookup, timeout: timeoutMs, headers: { 'user-agent': 'AwasScanAgent/0.1 (scam checker)' } }, (res) => {
       // Status and headers are all we need; destroy so the body is never read.
-      resolve({ status: res.statusCode ?? 0, location: res.headers.location ?? null });
+      resolve({
+        status: res.statusCode ?? 0,
+        location: res.headers.location ?? null,
+        servesAndroidApp: headersShowAndroidApp(res.headers['content-type'], res.headers['content-disposition']),
+      });
       res.destroy();
     });
     req.on('timeout', () => req.destroy(Object.assign(new Error('timeout'), { code: 'ETIMEOUT' })));
@@ -114,7 +135,12 @@ function requestHead(url: URL, timeoutMs: number): Promise<HopResult> {
 }
 
 /** Follows redirects hop by hop, re-checking every hop's scheme, port and address. */
-export async function followRedirects(start: URL, request = requestHead): Promise<{ hops: string[]; finalStatus: number | null; stoppedBecause: string | null }> {
+export async function followRedirects(start: URL, request = requestHead): Promise<{
+  hops: string[];
+  finalStatus: number | null;
+  stoppedBecause: string | null;
+  servesAndroidApp?: boolean;
+}> {
   const deadline = Date.now() + TOTAL_DEADLINE_MS;
   const hops: string[] = [start.hostname];
   let current = start;
@@ -140,7 +166,8 @@ export async function followRedirects(start: URL, request = requestHead): Promis
       return { hops, finalStatus: null, stoppedBecause: reason };
     }
     if (result.status < 300 || result.status >= 400 || !result.location) {
-      return { hops, finalStatus: result.status, stoppedBecause: null };
+      const servesAndroidApp = Boolean(result.servesAndroidApp) || /\.(apk|xapk|apks|apkm)$/i.test(current.pathname);
+      return { hops, finalStatus: result.status, stoppedBecause: null, servesAndroidApp };
     }
     current = new URL(result.location, current);
     hops.push(current.hostname);
@@ -178,14 +205,22 @@ export async function inspectLink(rawUrl: string): Promise<ToolResult> {
 
   const finalHost = redirects.hops.at(-1) ?? url.hostname;
   if (registrableDomain(finalHost) !== registrableDomain(url.hostname)) {
-    signals.push(signal('link_redirects_elsewhere', 'medium', `The link redirects to a different website (${registrableDomain(finalHost)}).`));
+    const target = registrableDomain(finalHost);
+    signals.push(signal('link_redirects_elsewhere', 'medium', `The link redirects to a different website (${target}).`,
+      `Pautan membawa ke laman web lain (${target}).`));
     signals.push(...staticLinkSignals(new URL(`https://${finalHost}`)).filter((s) => s.code === 'link_lookalike'));
   }
+  if (redirects.servesAndroidApp && !signals.some((s) => s.code === 'link_apk_download')) {
+    signals.push(signal('link_apk_download', 'high', 'The link downloads an Android app (APK) outside the Play Store.',
+      'Pautan memuat turun aplikasi Android (APK) dari luar Play Store.'));
+  }
   if (redirects.stoppedBecause === 'points to a private network address') {
-    signals.push(signal('link_private_address', 'medium', 'The link points to a private network address.'));
+    signals.push(signal('link_private_address', 'medium', 'The link points to a private network address.',
+      'Pautan menghala ke alamat rangkaian peribadi.'));
   }
   if (ageDays !== null && ageDays < NEW_DOMAIN_DAYS) {
-    signals.push(signal('link_new_domain', 'high', `The website was registered only ${ageDays} day(s) ago.`));
+    signals.push(signal('link_new_domain', 'high', `The website was registered only ${ageDays} day(s) ago.`,
+      `Laman web ini baru didaftarkan ${ageDays} hari lalu.`));
   }
 
   return {

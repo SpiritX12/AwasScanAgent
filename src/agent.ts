@@ -6,6 +6,8 @@ import type OpenAI from 'openai';
 import type { ChatCompletionContentPart, ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import sharp from 'sharp';
 import { TOOL_DEFINITIONS, runTool } from './tools/index.ts';
+import { checkAttachments, type AttachedFile } from './tools/attachments.ts';
+import { checkTactics } from './tools/tactics.ts';
 import {
   MESSAGE_EVIDENCE_ID, RISK_LEVELS, decideVerdict,
   type EvidenceEntry, type ModelAnswer, type Verdict,
@@ -17,6 +19,7 @@ const MAX_IMAGE_SIDE_PX = 1280;
 export interface Investigation {
   text?: string;
   images?: Buffer[];
+  files?: AttachedFile[]; // forwarded non-image files: name and type only, never the content
 }
 
 export interface AgentOptions {
@@ -30,7 +33,9 @@ The user forwards a suspicious message, screenshot or payment QR. Investigate wi
 - Attached image with a QR code: call decode_qr. If it is a payment QR, call parse_duitnow on its content. If it is a link, call inspect_link.
 - Any link in the text or screenshot: call inspect_link.
 - If the message claims to be from a bank, Pos, PDRM, LHDN or similar: call official_contact.
-Each tool result has an evidence_id. The user's own message has evidence_id "${MESSAGE_EVIDENCE_ID}".
+- A forwarded APK file is an Android app outside the Play Store: tell the user not to install it.
+Each tool result has an evidence_id. The user's own message has evidence_id "${MESSAGE_EVIDENCE_ID}", together with the
+scam tactics that code already found in its text.
 
 When you are done investigating, reply with ONLY this JSON (no markdown):
 {"risk": "high_risk" | "suspicious" | "no_red_flags_found",
@@ -67,16 +72,26 @@ export function parseAnswer(content: string | null | undefined): ModelAnswer | n
 
 export async function investigate(input: Investigation, options: AgentOptions): Promise<Verdict> {
   const images = input.images ?? [];
-  const userContent: ChatCompletionContentPart[] = [
-    { type: 'text', text: `${input.text?.trim() || '(no text, see attached image)'}\n\n[${images.length} image(s) attached]` },
-  ];
+  const text = input.text?.trim() ?? '';
+  const files = input.files ?? [];
+  // Code checks of the message itself (text tactics + forwarded files) become evidence MSG.
+  const messageSignals = [...checkTactics(text).signals, ...checkAttachments(files)];
+  const signalsNote = messageSignals.length > 0
+    ? messageSignals.map((s) => `${s.code} (${s.severity})`).join(', ')
+    : 'none';
+  const filesNote = files.length > 0 ? `\n[Forwarded file(s): ${files.map((f) => `"${f.name}" (${f.mimeType})`).join(', ')}]` : '';
+  const userContent: ChatCompletionContentPart[] = [{
+    type: 'text',
+    text: `${text || '(no text, see attachment)'}\n\n[${images.length} image(s) attached]${filesNote}\n`
+      + `[Code check of this message, evidence_id ${MESSAGE_EVIDENCE_ID}: warning signs found: ${signalsNote}]`,
+  }];
   for (const image of images) userContent.push({ type: 'image_url', image_url: { url: await toDataUrl(image) } });
 
   const messages: ChatCompletionMessageParam[] = [
     { role: 'system', content: SYSTEM_PROMPT },
     { role: 'user', content: userContent },
   ];
-  const evidence: EvidenceEntry[] = [];
+  const evidence: EvidenceEntry[] = [{ id: MESSAGE_EVIDENCE_ID, tool: 'message_checks', signals: messageSignals }];
 
   for (let step = 0; step < (options.maxSteps ?? MAX_STEPS); step++) {
     const response = await options.client.chat.completions.create({
@@ -99,7 +114,7 @@ export async function investigate(input: Investigation, options: AgentOptions): 
         // Bad arguments still get a result, so the model can correct itself on the next step.
       }
       const result = await runTool(call.function.name, args, { images });
-      const id = `E${evidence.length + 1}`;
+      const id = `E${evidence.length}`; // evidence[0] is MSG, so tool results start at E1
       evidence.push({ id, tool: call.function.name, signals: result.signals });
       messages.push({ role: 'tool', tool_call_id: call.id, content: JSON.stringify({ evidence_id: id, ...result }) });
     }
